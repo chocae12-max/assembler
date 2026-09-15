@@ -1,29 +1,79 @@
-1. EBP (Extended Base Pointer)
-2. Carry (CF), Zero (ZF), Sign (SF), Overflow (OF)
-3. Carry Flag (CF)
-4. Overflow Flag (OF)
-5. True
-6. Sign Flag (SF)
-7. FPU (Floating-Point Unit)
-8. 80 bits
-9. True
-10. False
-11. True
-12. False
-13. False
-14. False
-15. False
-16. True
-17. False
-18. False
-19. False
-20. False
-21. True
-22. True
-23. False
-24. False
-25. Hardware level, BIOS level, OS level
-26. 운영체제의 개입으로 인한 오버헤드와 지연 시간 최소화, 반응 속도를 확보해 성능을 향상시키기 위해서
+1. 32비트 모드에서 스택 포인터(ESP) 외에 스택의 변수를 가리키는 레지스터는 무엇인가?
+EBP (Extended Base Pointer)
+
+2. CPU 상태 플래그를 최소 4개 이상 나열하시오
+Carry (CF), Zero (ZF), Sign (SF), Overflow (OF)
+
+3. 부호 없는(unsigned) 산술 연산 결과가 너무 커서 대상(destination)에 맞지 않을 때 설정되는 플래그는 무엇인가?
+Carry Flag (CF)
+
+4. 부호 있는(signed) 산술 연산 결과가 대상에 맞기엔 너무 크거나 너무 작을 때 설정되는 플래그는 무엇인가?
+Overflow Flag (OF)
+
+5. (True/False) 레지스터 피연산자 크기가 32비트이고 REX 접두사를 사용할 때, 프로그램에서 R8D 레지스터를 사용할 수 있다.
+True
+
+6.산술 또는 논리 연산이 음수 결과를 생성할 때 설정되는 플래그는 무엇인가?
+Sign Flag (SF)
+
+7. CPU의 어느 부분이 부동 소수점 산술을 수행하는가?
+FPU (Floating-Point Unit)
+
+8. 32비트 프로세서에서 각 부동 소수점 데이터 레지스터는 몇 비트로 구성되는가?
+80 bits
+
+9. (True/False) x86-64 명령어 세트는 x86 명령어 세트와 하위 호환된다.
+True
+
+10. (True/False) 현재의 64비트 칩 구현에서 주소 지정에 64비트 전체가 사용된다.
+False
+
+11. (True/False) Itanium 명령어 세트는 x86 명령어 세트와 완전히 다르다.
+True
+
+12. (True/False): Static RAM is usually less expensive than dynamic RAM.
+False
+
+13. (True/False) 64비트 RDI 레지스터는 REX 접두사가 사용될 때 사용할 수 있다.
+False
+
+14. (True/False) 네이티브 64비트 모드에서는 16비트 리얼 모드를 사용할 수 있지만 가상-8086 모드는 사용할 수 없다.
+False
+
+15. (True/False) x86-64 프로세서는 x86 프로세서보다 4개 더 많은 범용 레지스터를 갖는다.
+False
+
+16. (True/False) 64비트 버전의 Microsoft Windows는 가상-8086 모드를 지원하지 않는다.
+True
+
+17. (True/False) DRAM은 오직 자외선을 통해서만 지울 수 있다.
+False
+18. (True/False) 64비트 모드에서는 최대 8개의 부동 소수점 레지스터를 사용할 수 있다.
+False
+
+19. (True/False) 버스(Bus)는 양 끝이 메인보드에 연결되어 있지만 메인보드에 직접 놓여 있지 않은 플라스틱 케이블이다.
+False
+
+20. (True/False) CMOS RAM은 스태틱 RAM과 동일하며, 추가 전력이나 새로 고침 주기 없이 그 값을 유지한다는 의미이다.
+False
+
+21. (True/False) PCI 커넥터는 그래픽 카드 및 사운드 카드에 사용된다.
+True
+
+22. (True/False) 8259A는 하드웨어 장치로부터 들어오는 외부 인터럽트를 처리하는 컨트롤러이다.
+True
+
+23. (True/False) 약어 PCI는 'programmable component interface'를 의미한다.
+False
+
+24. (True/False) VRAM은 'virtual random access memory'를 의미한다.
+False
+
+25. 어셈블리 언어 프로그램은 어느 수준(들)에서 입출력을 조작할 수 있는가?
+Hardware level, BIOS level, OS level
+
+26. 게임 프로그램이 종종 사운드 출력 신호를 사운드 카드의 하드웨어 포트로 직접 보내는 이유는 무엇인가?
+운영체제의 개입으로 인한 오버헤드와 지연 시간 최소화, 반응 속도를 확보해 성능을 향상시키기 위해서
 
 
 
