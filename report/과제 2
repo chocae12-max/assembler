@@ -1,0 +1,31 @@
+1. EBP (Extended Base Pointer)
+2. Carry (CF), Zero (ZF), Sign (SF), Overflow (OF)
+3. Carry Flag (CF)
+4. Overflow Flag (OF)
+5. True
+6. Sign Flag (SF)
+7. FPU (Floating-Point Unit)
+8. 80 bits
+9. True
+10. False
+11. True
+12. False
+13. False
+14. False
+15. False
+16. True
+17. False
+18. False
+19. False
+20. False
+21. True
+22. True
+23. False
+24. False
+25. Hardware level, BIOS level, OS level
+26. 운영체제의 개입으로 인한 오버헤드와 지연 시간 최소화, 반응 속도를 확보해 성능을 향상시키기 위해서
+
+
+
+
+
