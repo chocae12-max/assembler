@@ -42,4 +42,118 @@ ABh, 89h, 67h, 45h (가장 낮은 주소에 최하위 바이트부터 저장)
 
 15. 다음 더블워드 변수에 대해 메모리에 저장되는 개별 바이트의 순서를 가장 낮은 주소부터 가장 높은 주소 순으로 나타내시오.
 `val1 DWORD 87654321h`
-21h, 43h, 65h, 87h (리틀 엔디안 방식에 따라 최하위 바이트부터 순서대로 저장)
+
+
+1. Section 3.2의 AddTwo 프로그램을 참고하여, 레지스터를 사용하여 A = (A + B) - (C + D) 식을 계산하는 프로그램을 작성하시오. 
+EAX, EBX, ECX, EDX 레지스터에 정수 값을 할당하시오.
+.386
+.model flat, stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.code
+main PROC
+    mov eax, 10    ; A = 10
+    mov ebx, 20    ; B = 20
+    mov ecx, 5     ; C = 5
+    mov edx, 3     ; D = 3
+
+    add eax, ebx   ; EAX = A + B (30)
+    add ecx, edx   ; ECX = C + D (8)
+    sub eax, ecx   ; EAX = (A + B) - (C + D) (22)
+
+    INVOKE ExitProcess, 0
+main ENDP
+END main
+```[cite: 3, 4]
+
+2. 일주일 7일에 대한 기호 상수를 정의하는 프로그램을 작성하시오. 이 기호들을 초기화 값으로 사용하는 배열 변수를 생성하시오[cite: 4].
+```assembly
+.386
+.model flat, stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+; 일주일 7일 기호 상수 정의
+Sunday = 1
+Monday = 2
+Tuesday = 3
+Wednesday = 4
+Thursday = 5
+Friday = 6
+Saturday = 7
+
+.data
+weekDays BYTE Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
+
+.code
+main PROC
+    INVOKE ExitProcess, 0
+main ENDP
+END main
+```[cite: 3, 4]
+
+
+3. Section 3.4의 Table 3-2에 나열된 각 데이터 타입의 정의를 포함하는 프로그램을 작성하시오. 각 변수를 해당 데이터 타입에 일치하는 값으로 초기화하시오[cite: 4].
+```assembly
+.386
+.model flat, stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.data
+    val1  BYTE   255                         ; 8비트 부호 없는 정수
+    val2  SBYTE  -128                        ; 8비트 부호 있는 정수
+    val3  WORD   65535                       ; 16비트 부호 없는 정수
+    val4  SWORD  -32768                      ; 16비트 부호 있는 정수
+    val5  DWORD  12345678h                   ; 32비트 부호 없는 정수
+    val6  SDWORD -2147483648                 ; 32비트 부호 있는 정수
+    val7  FWORD  0                           ; 48비트 정수 (포인터)
+    val8  QWORD  123456789ABCDEF0h           ; 64비트 정수
+    val9  TBYTE  800000000000001234h         ; 80비트 (10바이트) 패킹 BCD
+    val10 REAL4  -1.2                        ; 32비트 단정밀도 부동소수점
+    val11 REAL8  3.2E-260                    ; 64비트 배정밀도 부동소수점
+    val12 REAL10 4.6E+4096                   ; 80비트 확장 정밀도 부동소수점
+
+.code
+main PROC
+    INVOKE ExitProcess, 0
+main ENDP
+END main
+```[cite: 3, 4]
+
+4. 여러 문자열 리터럴(따옴표로 둘러싸인 문자들)에 대한 기호 이름을 정의하는 프로그램을 작성하시오. 변수 정의에서 각 기호 이름을 사용하시오[cite: 4].
+```assembly
+.386
+.model flat, stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+; 텍스트/문자열 기호 상수 정의
+msg1 EQU <"First string literal", 0>
+msg2 TEXTEQU <"Second string literal", 0>
+msg3 TEXTEQU <"Third string literal", 0>
+
+.data
+    str1 BYTE msg1
+    str2 BYTE msg2
+    str3 BYTE msg3
+
+.code
+main PROC
+    INVOKE ExitProcess, 0
+main ENDP
+END main
+```[cite: 3, 4]
+
+5. AddTwoSum 프로그램에 대한 리스팅 파일을 생성하고 
+각 명령어에 대해 생성된 기계어 코드 바이트에 대한 설명을 작성하시오[cite: 4].
+* `mov eax, 5` $\rightarrow$ **`B8 00000005`**: `B8`은 32비트 즉시값을 EAX 레지스터에 복사하는 옵코드이며, 
+뒤의 4바이트(`05 00 00 00`)는 16진수 리틀 엔디안 형태의 즉시값 5임[cite: 3, 4].
+* `add eax, 6` $\rightarrow$ **`83 C0 06`**: `83 C0`은 EAX에 8비트 부호 확장 즉시값을 더하는 옵코드이며,
+`06`은 더해질 즉시값 6임[cite: 3, 4].
+* `mov sum, eax` $\rightarrow$ **`A3 00000000 [R]`**: `A3`은 EAX의 값을 특정 메모리 오프셋으로 복사하는 옵코드이며, 
+뒤의 `00000000`은 변수 `sum`의 오프셋 주소임 (재배치 가능 주소 표시)[cite: 4].
+* `INVOKE ExitProcess, 0` $\rightarrow$ 매크로 지시어로 아래 두 기계어 코드로 확장됨[cite: 3, 4]:
+  * **`6A 00`**: `push 0` (스택에 반환 코드 0 푸시)[cite: 3, 4]
+  * **`E8 00000000 [E]`**: `call ExitProcess` (`E8`은 상대 주소 call 옵코드이며, 실제 라이브러리 함수 주소는 링커에 의해 결합됨)[cite: 3, 4]
