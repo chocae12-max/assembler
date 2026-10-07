@@ -1,0 +1,99 @@
+1. 아래 변수들과 MOV 명령어를 사용하여 바이트 순서를 반대로 뒤집어 bigEndian에서 littleEndian으로 값을 복사하는 프로그램을 작성하라.
+해당 숫자의 32비트 값은 16진수로 12345678h이다.
+mov al, [bigEndian]
+mov BYTE PTR [littleEndian+3], al
+mov al, [bigEndian+1]
+mov BYTE PTR [littleEndian+2], al
+mov al, [bigEndian+2]
+mov BYTE PTR [littleEndian+1], al
+mov al, [bigEndian+3]
+mov BYTE PTR [littleEndian], al
+
+
+2. 짝수 개의 요소를 가진 배열에서 값의 각 쌍을 서로 교환하는 루프와 인덱스 주소 지정 방식을 사용하는 프로그램을 작성하라.
+즉, i번째 항목은 i+1번째 항목과 교환되고, i+2번째 항목은 i+3번째 항목과 교환되는 방식이다.
+mov esi, 0
+mov ecx, LENGTHOF array / 2
+L1:
+mov eax, array[esi]
+xchg eax, array[esi+4]
+mov array[esi], eax
+add esi, 8
+loop L1
+
+
+3. 연속된 배열 요소 간의 모든 차이값(gap)의 합을 계산하는 루프와 인덱스 주소 지정 방식을 사용하는 프로그램을 작성하라. 
+배열 요소는 더블워드이며 감소하지 않는 순서로 정렬되어 있다. 예를 들어 배열 {0, 2, 5, 9, 10}은 차이값이 2, 3, 4, 1이며 이들의 합은 10이다.
+mov esi, 0
+mov ecx, (LENGTHOF array) - 1
+mov eax, 0
+L1:
+mov edx, array[esi+4]
+sub edx, array[esi]
+add eax, edx
+add esi, 4
+loop L1
+
+
+4. 부호 없는 워드(16비트) 배열의 모든 요소를 부호 없는 더블워드(32비트) 배열로 복사하는 루프를 사용하는 프로그램을 작성하라.
+mov esi, 0
+mov edi, 0
+mov ecx, LENGTHOF wordArray
+L1:
+movzx eax, wordArray[esi]
+mov dwordArray[edi], eax
+add esi, 2
+add edi, 4
+loop L1
+
+5. 다음 공식으로 정의되는 피보나치 수열의 처음 7개 값을 계산하는 루프를 사용하는 프로그램을 작성하라
+: Fib(1) = 1, Fib(2) = 1, Fib(n) = Fib(n – 1) + Fib(n – 2).
+mov fib[0], 1
+mov fib[4], 1
+mov esi, 8
+mov ecx, 5
+L1:
+mov eax, fib[esi-4]
+add eax, fib[esi-8]
+mov fib[esi], eax
+add esi, 4
+loop L1
+
+6. 간접 또는 인덱스 주소 지정 방식을 사용하는 루프를 작성하여 정수 배열의 요소를 제자리에서(in place) 반전시켜라. 
+요소를 다른 배열로 복사하지 마라. 나중에 배열 크기나 타입이 변경되더라도 유연하게 대처할 수 있도록 SIZEOF, TYPE, LENGTHOF 연산자를 사용하라.
+mov esi, OFFSET array
+mov edi, OFFSET array + SIZEOF array - TYPE array
+mov ecx, LENGTHOF array / 2
+L1:
+mov eax, [esi]
+xchg eax, [edi]
+mov [esi], eax
+add esi, TYPE array
+sub edi, TYPE array
+loop L1
+
+7. 루프와 간접 주소 지정 방식을 사용하여 문자 순서를 역순으로 뒤집으면서 source에서 target으로 문자열을 복사하는 
+프로그램을 작성하라 (source BYTE "This is the source string",0 / target BYTE SIZEOF source DUP('#')).
+mov esi, OFFSET source + SIZEOF source - 2
+mov edi, OFFSET target
+mov ecx, SIZEOF source - 1
+L1:
+mov al, [esi]
+mov [edi], al
+dec esi
+inc edi
+loop L1
+mov BYTE PTR [edi], 0
+
+8. 루프와 인덱스 주소 지정 방식을 사용하여 32비트 정수 배열의 요소들을 앞으로 한 자리씩 회전(shift)시키는 
+코드를 작성하라. 배열 끝에 있는 값은 첫 번째 위치로 돌아와야 한다. 예를 들어 [10, 20, 30, 40] 배열은 [40, 10, 20, 30]으로 변환된다.
+mov esi, SIZEOF array - 4
+mov eax, array[esi]
+mov ecx, LENGTHOF array - 1
+L1:
+mov edx, array[esi-4]
+mov array[esi], edx
+sub esi, 4
+loop L1
+mov array[0], eax
+
