@@ -1,91 +1,103 @@
-1. three라는 이름의 더블워드 변수에서 상위 워드와 하위 워드를 서로 교환하는 MOV 명령어 시퀀스를 작성하라.
-mov ax, WORD PTR [three]
-mov dx, WORD PTR [three+2]
-mov WORD PTR [three], dx
-mov WORD PTR [three+2], ax
+1. 아래 변수들과 MOV 명령어를 사용하여 바이트 순서를 반대로 뒤집어 bigEndian에서 littleEndian으로 값을 복사하는 프로그램을 작성하라.
+해당 숫자의 32비트 값은 16진수로 12345678h이다.
+mov al, [bigEndian]
+mov BYTE PTR [littleEndian+3], al
+mov al, [bigEndian+1]
+mov BYTE PTR [littleEndian+2], al
+mov al, [bigEndian+2]
+mov BYTE PTR [littleEndian+1], al
+mov al, [bigEndian+3]
+mov BYTE PTR [littleEndian], al
 
 
-2. XCHG 명령어를 최대 3번만 사용하여 네 개의 8비트 레지스터에 있는 값의 순서를 A, B, C, D에서 B, C, D, A로 재정렬하라.
-xchg al, bl
-xchg bl, cl
-xchg cl, dl
-
-
-3. 전송된 메시지에는 1 비트의 개수를 짝수로 맞추기 위해 데이터 바이트와 결합되는 패리티 비트가 포함되는 경우가 많다. AL 레지스터의 메시지 바이트에 01110101이 들어있다고 가정할 때, 산술 명령어와 패리티 플래그를 결합하여 이 메시지 바이트가 짝수 패리티인지 홀수 패리티인지 확인하는 방법을 보여라.
-add al, 0
-
-
-4. 바이트 피연산자를 사용하여 두 음의 정수를 더하고 오버플로 플래그가 설정되도록 하는 코드를 작성하라.
-mov al, -128
-add al, -1
-
-
-5. 덧셈을 사용하여 제로 플래그와 캐리 플래그를 동시에 설정하는 2개의 명령어 시퀀스를 작성하라.
-mov al, 1
-add al, 0FFh
-
-
-6. 뺄셈을 사용하여 캐리 플래그를 설정하는 2개의 명령어 시퀀스를 작성하라.
-mov al, 1
-sub al, 2
-
-
-7. 다음 산술 표현식을 어셈블리어로 구현하라: EAX = –val2 + 7 – val3 + val1 (val1, val2, val3은 32비트 정수 변수)
-mov eax, val2
-neg eax
-add eax, 7
-sub eax, val3
-add eax, val1
-
-
-8. 더블워드 배열을 순회하며 인덱스 주소 지정 방식과 스케일 팩터를 사용하여 요소들의 합을 계산하는 루프를 작성하라.
+2. 짝수 개의 요소를 가진 배열에서 값의 각 쌍을 서로 교환하는 루프와 인덱스 주소 지정 방식을 사용하는 프로그램을 작성하라.
+즉, i번째 항목은 i+1번째 항목과 교환되고, i+2번째 항목은 i+3번째 항목과 교환되는 방식이다.
 mov esi, 0
-mov ecx, LENGTHOF array
-mov eax, 0
+mov ecx, LENGTHOF array / 2
 L1:
-add eax, array[esi*4]
-inc esi
+mov eax, array[esi]
+xchg eax, array[esi+4]
+mov array[esi], eax
+add esi, 8
 loop L1
 
 
-9. 다음 표현식을 어셈블리어로 구현하라: AX = (val2 + BX) – val4 (val2와 val4는 16비트 정수 변수)
-mov ax, val2
-add ax, bx
-sub ax, val4
+3. 연속된 배열 요소 간의 모든 차이값(gap)의 합을 계산하는 루프와 인덱스 주소 지정 방식을 사용하는 프로그램을 작성하라. 
+배열 요소는 더블워드이며 감소하지 않는 순서로 정렬되어 있다. 예를 들어 배열 {0, 2, 5, 9, 10}은 차이값이 2, 3, 4, 1이며 이들의 합은 10이다.
+mov esi, 0
+mov ecx, (LENGTHOF array) - 1
+mov eax, 0
+L1:
+mov edx, array[esi+4]
+sub edx, array[esi]
+add eax, edx
+add esi, 4
+loop L1
 
 
-10. 캐리 플래그와 오버플로 플래그를 동시에 설정하는 2개의 명령어 시퀀스를 작성하라.
-mov al, 80h
-add al, 80h
+4. 부호 없는 워드(16비트) 배열의 모든 요소를 부호 없는 더블워드(32비트) 배열로 복사하는 루프를 사용하는 프로그램을 작성하라.
+mov esi, 0
+mov edi, 0
+mov ecx, LENGTHOF wordArray
+L1:
+movzx eax, wordArray[esi]
+mov dwordArray[edi], eax
+add esi, 2
+add edi, 4
+loop L1
 
 
-11. INC 및 DEC 명령어를 실행한 후 제로 플래그를 사용하여 부호 없는 오버플로를 감지하는 방법을 보여주는 명령어 시퀀스를 작성하라.
-inc al
-jz overflow_label
+5. 다음 공식으로 정의되는 피보나치 수열의 처음 7개 값을 계산하는 루프를 사용하는 프로그램을 작성하라
+: Fib(1) = 1, Fib(2) = 1, Fib(n) = Fib(n – 1) + Fib(n – 2).
+mov fib[0], 1
+mov fib[4], 1
+mov esi, 8
+mov ecx, 5
+L1:
+mov eax, fib[esi-4]
+add eax, fib[esi-8]
+mov fib[esi], eax
+add esi, 4
+loop L1
 
 
-12. 주어진 데이터에서 myBytes를 짝수 주소에 정렬하는 지시어를 삽입하라.
-ALIGN 2
+6. 간접 또는 인덱스 주소 지정 방식을 사용하는 루프를 작성하여 정수 배열의 요소를 제자리에서(in place) 반전시켜라. 
+요소를 다른 배열로 복사하지 마라. 나중에 배열 크기나 타입이 변경되더라도 유연하게 대처할 수 있도록 SIZEOF, TYPE, LENGTHOF 연산자를 사용하라.
+mov esi, OFFSET array
+mov edi, OFFSET array + SIZEOF array - TYPE array
+mov ecx, LENGTHOF array / 2
+L1:
+mov eax, [esi]
+xchg eax, [edi]
+mov [esi], eax
+add esi, TYPE array
+sub edi, TYPE array
+loop L1
 
 
-13. 다음 각 명령어가 실행된 후 EAX의 값은 무엇인가?
-a. 1 / b. 4 / c. 4 / d. 2 / e. 4 / f. 8 / g. 5
-
-14. myBytes의 처음 두 바이트를 DX 레지스터로 이동시켜 결과 값이 2010h가 되도록 하는 단일 명령어를 작성하라.
-mov dx, WORD PTR myBytes
-
-
-15. myWords의 두 번째 바이트를 AL 레지스터로 이동시키는 명령어를 작성하라.
-mov al, BYTE PTR [myWords+1]
-
-
-16. myBytes의 네 바이트 전체를 EAX 레지스터로 이동시키는 명령어를 작성하라.
-mov eax, DWORD PTR myBytes
-
-
-17. 주어진 데이터에서 myWords를 32비트 레지스터로 직접 이동할 수 있도록 허용하는 LABEL 지시어를 삽입하라.
-myWordsD LABEL DWORD
+7. 루프와 간접 주소 지정 방식을 사용하여 문자 순서를 역순으로 뒤집으면서 source에서 target으로 문자열을 복사하는 
+프로그램을 작성하라 (source BYTE "This is the source string",0 / target BYTE SIZEOF source DUP('#')).
+mov esi, OFFSET source + SIZEOF source - 2
+mov edi, OFFSET target
+mov ecx, SIZEOF source - 1
+L1:
+mov al, [esi]
+mov [edi], al
+dec esi
+inc edi
+loop L1
+mov BYTE PTR [edi], 0
 
 
-18. 주어진 데이터에서 myBytes를 16비트 레지스터로 직접 이동할 수 있도록 허용하는 LABEL 지시어를 삽입하라.
-myBytesW LABEL WORD
+8. 루프와 인덱스 주소 지정 방식을 사용하여 32비트 정수 배열의 요소들을 앞으로 한 자리씩 회전(shift)시키는 
+코드를 작성하라. 배열 끝에 있는 값은 첫 번째 위치로 돌아와야 한다. 예를 들어 [10, 20, 30, 40] 배열은 [40, 10, 20, 30]으로 변환된다.
+mov esi, SIZEOF array - 4
+mov eax, array[esi]
+mov ecx, LENGTHOF array - 1
+L1:
+mov edx, array[esi-4]
+mov array[esi], edx
+sub esi, 4
+loop L1
+mov array[0], eax
+
