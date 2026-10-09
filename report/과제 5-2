@@ -1,0 +1,287 @@
+1. ​PUSH와 POP 명령어 시퀀스를 사용하여 EAX와 EBX 레지스터의 값을 서로 맞바꾸는(Exchange) 코드를 작성하라.
+push eax
+push ebx
+pop eax
+pop ebx
+
+
+2. ​ReadInt 프로시저를 호출하여 정수를 입력받고, 그 반환값을 intVal이라는 이름의 변수에 저장하는 코드를 작성하라.
+call ReadInt
+mov intVal, eax
+
+
+3. ​Irvine32 라이브러리의 DumpMem 프로시저를 사용하여 myDoubles라는 20개의 doubleword(32비트 정수) 
+배열의 내용을 화면에 표시하는 명령어 시퀀스를 작성하라.
+​mov esi, OFFSET myDoubles
+mov ecx, LENGTHOF myDoubles
+mov ebx, TYPE myDoubles
+call DumpMem
+
+
+4. ​ESI로 32비트 정수 배열의 오프셋을, ECX로 배열의 요소 개수를, EDX로 정수 값을 전달받아 배열의 모든 요소를 
+해당 정수 값으로 채우는 ArrayFill 프로시저를 작성하라.
+ArrayFill PROC USES esi ecx
+L1:
+    mov [esi], edx
+    add esi, TYPE DWORD
+    loop L1
+    ret
+ArrayFill ENDP
+
+
+5. ​RCX, RDX, R8 레지스터로 세 개의 64비트 정수 인자를 전달받아 그 합을 RAX 레지스터로 반환하는 64비트 프로시저 AddThree를 작성하고, 
+10, 20, 30을 인자로 전달하여 이 프로시저를 호출하는 코드 시퀀스를 보여라.
+; AddThree 프로시저 정의
+AddThree PROC
+    mov rax, rcx
+    add rax, rdx
+    add rax, r8
+    ret
+AddThree ENDP
+
+; AddThree 프로시저 호출 코드 (x64 호출 규약 섀도 공간 32바이트 확보 및 해제)
+sub rsp, 32
+mov rcx, 10
+mov rdx, 20
+mov r8, 30
+call AddThree
+add rsp, 32
+
+
+
+1. 루프(loop)를 사용하여 동일한 문자열을 네 가지 서로 다른 색상으로 출력하는 프로그램을 작성하라.
+Irvine32 라이브러리의 SetTextColor 프로시저를 호출할 것.
+INCLUDE Irvine32.inc
+
+.data
+strPrompt BYTE "This line is printed in a different color!", 0
+colorList DWORD yellow + (black * 16), \
+                lightGreen + (black * 16), \
+                lightCyan + (black * 16), \
+                lightRed + (black * 16)
+
+.code
+main PROC
+    mov ecx, 4                      ; 4가지 색상 루프 카운터
+    mov esi, 0                      ; 배열 인덱스
+
+L1:
+    mov eax, colorList[esi*4]       ; 색상 속성 로드
+    call SetTextColor               ; 텍스트 색상 설정
+    mov edx, OFFSET strPrompt       ; 문자열 오프셋 로드
+    call WriteString
+    call Crlf
+    inc esi
+    loop L1
+
+    ; 기본 색상(흰색 글자, 검은색 배경)으로 복원
+    mov eax, white + (black * 16)
+    call SetTextColor
+
+    exit
+main ENDP
+END main
+
+
+2. 문자 배열과 이 문자 배열의 인덱스를 가리키는 정수 링크 배열이 주어졌다고 가정하자. 링크 배열을 순회하면서 링크가 지정하는 
+순서대로 문자를 화면에 출력하는 프로그램을 작성하라. 링크 배열의 시작 인덱스(Start)부터 시작하여,
+해당 위치의 링크 값이 가리키는 다음 인덱스를 따라가며 끝(센티널 값 0)에 도달할 때까지 문자를 출력할 것.
+INCLUDE Irvine32.inc
+
+.data
+start DWORD 1                       ; 시작 인덱스
+chars BYTE  'H', 'A', 'C', 'E', 'B', 'D', 'F', 'G'
+links DWORD   0,   4,   5,   6,   2,   3,   7,   0
+
+.code
+main PROC
+    mov esi, start                  ; 시작 인덱스 로드
+
+L1:
+    cmp esi, 0                      ; 링크가 0(종료 조건)인지 확인
+    je  Finished
+
+    mov al, chars[esi]              ; 해당 인덱스의 문자 가져오기
+    call WriteChar                  ; 문자 출력
+
+    mov esi, links[esi*4]           ; 다음 방문할 인덱스로 이동
+    jmp L1
+
+Finished:
+    call Crlf
+    exit
+main ENDP
+END main
+
+
+3. 화면을 지우고(Clear), 커서를 화면 중앙 근처로 이동시킨 후, 
+사용자로부터 두 개의 정수를 입력받아 더한 뒤 그 합을 출력하는 프로그램을 작성하라.
+INCLUDE Irvine32.inc
+
+.data
+prompt1 BYTE "Enter the first integer: ", 0
+prompt2 BYTE "Enter the second integer: ", 0
+sumMsg  BYTE "The sum is: ", 0
+
+.code
+main PROC
+    call Clrscr                     ; 화면 지우기
+
+    ; 커서를 화면 중앙 근처(행 12, 열 25)로 이동
+    mov dh, 12
+    mov dl, 25
+    call Gotoxy
+
+    ; 첫 번째 정수 입력
+    mov edx, OFFSET prompt1
+    call WriteString
+    call ReadInt
+    mov ebx, eax                    ; 첫 번째 값 EBX에 보관
+
+    ; 두 번째 줄로 커서 이동 후 두 번째 정수 입력
+    inc dh
+    call Gotoxy
+    mov edx, OFFSET prompt2
+    call WriteString
+    call ReadInt
+
+    ; 합계 계산
+    add eax, ebx
+
+    ; 합계 출력
+    inc dh
+    call Gotoxy
+    mov edx, OFFSET sumMsg
+    call WriteString
+    call WriteInt
+    call Crlf
+
+    exit
+main ENDP
+END main
+
+4. 3번 연습문제의 프로그램을 수정하여 덧셈 과정을 루프 내에서 반복 실행하도록 하라. 
+각 덧셈을 수행하기 전에 화면을 지우고, 계산이 끝난 후 사용자에게 계속 진행할 것인지 물어볼 것.
+INCLUDE Irvine32.inc
+
+.data
+prompt1 BYTE "Enter the first integer: ", 0
+prompt2 BYTE "Enter the second integer: ", 0
+sumMsg  BYTE "The sum is: ", 0
+againMsg BYTE "Do you want to continue? (Y/N): ", 0
+
+.code
+main PROC
+RepeatLoop:
+    call Clrscr                     ; 매 반복마다 화면 지우기
+
+    mov dh, 10
+    mov dl, 25
+    call Gotoxy
+
+    mov edx, OFFSET prompt1
+    call WriteString
+    call ReadInt
+    mov ebx, eax
+
+    inc dh
+    call Gotoxy
+    mov edx, OFFSET prompt2
+    call WriteString
+    call ReadInt
+
+    add eax, ebx
+
+    inc dh
+    call Gotoxy
+    mov edx, OFFSET sumMsg
+    call WriteString
+    call WriteInt
+    call Crlf
+
+    ; 계속 여부 질의
+    add dh, 2
+    call Gotoxy
+    mov edx, OFFSET againMsg
+    call WriteString
+    call ReadChar
+
+    ; 'Y' 또는 'y' 입력 시 반복
+    cmp al, 'Y'
+    je  RepeatLoop
+    cmp al, 'y'
+    je  RepeatLoop
+
+    call Crlf
+    exit
+main ENDP
+END main
+
+5. Better Random Numbers (향상된 난수 생성)
+지정된 범위(예: -300에서 +300 사이)의 의사 난수 정수 20개를 생성하여 출력하는 프로그램을 작성하라.
+Irvine32 라이브러리의 RandomRange와 Randomize 프로시저를 사용할 것.
+INCLUDE Irvine32.inc
+
+.code
+main PROC
+    call Randomize                  ; 난수 생성기 시드 초기화
+    mov ecx, 20                     ; 20개 난수 생성 루프
+
+L1:
+    ; 범위: -300 ~ +300 (총 601개 정수: 0 ~ 600 생성 후 -300)
+    mov eax, 601
+    call RandomRange                ; EAX = 0 ~ 600
+    sub eax, 300                    ; EAX = -300 ~ +300
+
+    call WriteInt                   ; 부호 있는 정수 출력
+    mov al, ' '
+    call WriteChar                  ; 공백 구분자 출력
+    loop L1
+
+    call Crlf
+    exit
+main ENDP
+END main
+
+
+
+6. Random Strings (난수 문자열 생성)
+각각 10개의 영문 대문자(A~Z)로 구성된 난수 문자열 20개를 생성하는 프로그램을 작성하라. 
+생성된 각 문자열은 서로 다른 줄에 출력되어야 한다.
+INCLUDE Irvine32.inc
+
+TAB_SIZE = 10
+
+.data
+randString BYTE TAB_SIZE DUP(?), 0
+
+.code
+main PROC
+    call Randomize
+    mov ecx, 20                     ; 20개의 문자열 생성
+
+OuterLoop:
+    push ecx                        ; 외부 루프 카운터 보존
+    mov ecx, TAB_SIZE               ; 내부 루프: 10글자 생성
+    mov esi, 0
+
+InnerLoop:
+    mov eax, 26                     ; 0 ~ 25 난수
+    call RandomRange
+    add al, 'A'                     ; 'A' ~ 'Z' 문자로 변환
+    mov randString[esi], al
+    inc esi
+    loop InnerLoop
+
+    ; 생성된 문자열 출력
+    mov edx, OFFSET randString
+    call WriteString
+    call Crlf
+
+    pop ecx                         ; 외부 루프 카운터 복원
+    loop OuterLoop
+
+    exit
+main ENDP
+END main
+
