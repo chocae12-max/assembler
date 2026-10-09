@@ -1,55 +1,6 @@
-1. ​PUSH와 POP 명령어 시퀀스를 사용하여 EAX와 EBX 레지스터의 값을 서로 맞바꾸는(Exchange) 코드를 작성하라.
-push eax
-push ebx
-pop eax
-pop ebx
 
-
-2. ​ReadInt 프로시저를 호출하여 정수를 입력받고, 그 반환값을 intVal이라는 이름의 변수에 저장하는 코드를 작성하라.
-call ReadInt
-mov intVal, eax
-
-
-3. ​Irvine32 라이브러리의 DumpMem 프로시저를 사용하여 myDoubles라는 20개의 doubleword(32비트 정수) 
-배열의 내용을 화면에 표시하는 명령어 시퀀스를 작성하라.
-​mov esi, OFFSET myDoubles
-mov ecx, LENGTHOF myDoubles
-mov ebx, TYPE myDoubles
-call DumpMem
-
-
-4. ​ESI로 32비트 정수 배열의 오프셋을, ECX로 배열의 요소 개수를, EDX로 정수 값을 전달받아 배열의 모든 요소를 
-해당 정수 값으로 채우는 ArrayFill 프로시저를 작성하라.
-ArrayFill PROC USES esi ecx
-L1:
-    mov [esi], edx
-    add esi, TYPE DWORD
-    loop L1
-    ret
-ArrayFill ENDP
-
-
-5. ​RCX, RDX, R8 레지스터로 세 개의 64비트 정수 인자를 전달받아 그 합을 RAX 레지스터로 반환하는 64비트 프로시저 AddThree를 작성하고, 
-10, 20, 30을 인자로 전달하여 이 프로시저를 호출하는 코드 시퀀스를 보여라.
-; AddThree 프로시저 정의
-AddThree PROC
-    mov rax, rcx
-    add rax, rdx
-    add rax, r8
-    ret
-AddThree ENDP
-
-; AddThree 프로시저 호출 코드 (x64 호출 규약 섀도 공간 32바이트 확보 및 해제)
-sub rsp, 32
-mov rcx, 10
-mov rdx, 20
-mov r8, 30
-call AddThree
-add rsp, 32
-
-
-
-1. 루프(loop)를 사용하여 동일한 문자열을 네 가지 서로 다른 색상으로 출력하는 프로그램을 작성하라.
+1. Draw Text Colors
+루프(loop)를 사용하여 동일한 문자열을 네 가지 서로 다른 색상으로 출력하는 프로그램을 작성하라.
 Irvine32 라이브러리의 SetTextColor 프로시저를 호출할 것.
 INCLUDE Irvine32.inc
 
@@ -83,7 +34,8 @@ main ENDP
 END main
 
 
-2. 문자 배열과 이 문자 배열의 인덱스를 가리키는 정수 링크 배열이 주어졌다고 가정하자. 링크 배열을 순회하면서 링크가 지정하는 
+2. Linking Array Items
+문자 배열과 이 문자 배열의 인덱스를 가리키는 정수 링크 배열이 주어졌다고 가정하자. 링크 배열을 순회하면서 링크가 지정하는 
 순서대로 문자를 화면에 출력하는 프로그램을 작성하라. 링크 배열의 시작 인덱스(Start)부터 시작하여,
 해당 위치의 링크 값이 가리키는 다음 인덱스를 따라가며 끝(센티널 값 0)에 도달할 때까지 문자를 출력할 것.
 INCLUDE Irvine32.inc
@@ -114,7 +66,8 @@ main ENDP
 END main
 
 
-3. 화면을 지우고(Clear), 커서를 화면 중앙 근처로 이동시킨 후, 
+3. . Simple Addition (1)
+화면을 지우고(Clear), 커서를 화면 중앙 근처로 이동시킨 후, 
 사용자로부터 두 개의 정수를 입력받아 더한 뒤 그 합을 출력하는 프로그램을 작성하라.
 INCLUDE Irvine32.inc
 
@@ -160,7 +113,8 @@ main PROC
 main ENDP
 END main
 
-4. 3번 연습문제의 프로그램을 수정하여 덧셈 과정을 루프 내에서 반복 실행하도록 하라. 
+4. Simple Addition(2)
+3번 연습문제의 프로그램을 수정하여 덧셈 과정을 루프 내에서 반복 실행하도록 하라. 
 각 덧셈을 수행하기 전에 화면을 지우고, 계산이 끝난 후 사용자에게 계속 진행할 것인지 물어볼 것.
 INCLUDE Irvine32.inc
 
@@ -244,7 +198,6 @@ main ENDP
 END main
 
 
-
 6. Random Strings (난수 문자열 생성)
 각각 10개의 영문 대문자(A~Z)로 구성된 난수 문자열 20개를 생성하는 프로그램을 작성하라. 
 생성된 각 문자열은 서로 다른 줄에 출력되어야 한다.
@@ -284,4 +237,241 @@ InnerLoop:
     exit
 main ENDP
 END main
+
+ 
+7. Random Screen Locations
+화면의 임의 위치 100곳에 단일 문자를 출력하는 프로그램을 작성하라. GetMaxOutputXY 프로시저를 사용하여 화면 크기를 구하고,
+각 문자를 출력할 때마다 100밀리초(ms)의 지연 시간(Delay)을 둘 것.
+INCLUDE Irvine32.inc
+
+.data
+rows BYTE ?
+cols BYTE ?
+
+.code
+main PROC
+    call Clrscr
+    call Randomize
+
+    ; 콘솔 창의 최대 크기 구하기 (AX = 열/X, DX = 행/Y)
+    call GetMaxOutputXY
+    mov cols, al
+    mov rows, dl
+
+    mov ecx, 100                    ; 100회 반복
+
+L1:
+    ; 임의의 X 좌표 생성
+    movzx eax, cols
+    call RandomRange
+    mov dl, al
+
+    ; 임의의 Y 좌표 생성
+    movzx eax, rows
+    call RandomRange
+    mov dh, al
+
+    call Gotoxy                     ; 커서 위치 이동
+
+    mov al, 'X'                     ; 출력할 문자
+    call WriteChar
+
+    mov eax, 100                    ; 100ms 지연
+    call Delay
+
+    loop L1
+
+    call Crlf
+    exit
+main ENDP
+END main
+
+
+8. Color Matrix
+16가지 배경색과 16가지 전경(텍스트) 색을 모두 사용하여 16 x 16 크기의 문자 매트릭스를 출력하는 프로그램을 작성하라.
+외부 루프는 배경색을 순회하고, 내부 루프는 텍스트 색상을 순회해야 한다.
+INCLUDE Irvine32.inc
+
+.code
+main PROC
+    mov ebx, 0                      ; EBX = 배경색 (0 ~ 15)
+
+OuterLoop:
+    mov edx, 0                      ; EDX = 전경색 (0 ~ 15)
+
+InnerLoop:
+    ; 색상 속성 = (배경색 * 16) + 전경색
+    mov eax, ebx
+    shl eax, 4
+    add eax, edx
+    call SetTextColor
+
+    mov al, 'A'                     ; 출력할 문자
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+
+    inc edx
+    cmp edx, 16
+    jb  InnerLoop
+
+    call Crlf                       ; 한 행 출력 후 줄바꿈
+    inc ebx
+    cmp ebx, 16
+    jb  OuterLoop
+
+    ; 기본 색상 복원
+    mov eax, white + (black * 16)
+    call SetTextColor
+
+    exit
+main ENDP
+END main
+
+
+9. Simple Addition 
+Irvine64 라이브러리를 사용하여 3번 연습문제의 64비트 버전을 작성하라. 
+사용자에게 두 개의 64비트 정수를 입력받아 그 합을 계산하고 결과를 화면에 출력할 것.
+INCLUDE Irvine64.inc
+
+.data
+prompt1 BYTE "Enter the first 64-bit integer: ", 0
+prompt2 BYTE "Enter the second 64-bit integer: ", 0
+sumMsg  BYTE "The sum is: ", 0
+
+.code
+main PROC
+    sub rsp, 40                     ; 섀도 공간(32바이트) 및 스택 16바이트 정렬 할당
+
+    call Clrscr
+
+    mov rdx, OFFSET prompt1
+    call WriteString
+    call ReadInt64                  ; 64비트 정수 읽기 (RAX에 반환)
+    mov rbx, rax                    ; 첫 번째 정수 RBX에 보관
+
+    mov rdx, OFFSET prompt2
+    call WriteString
+    call ReadInt64
+
+    add rax, rbx                    ; 합계 계산 (RAX = RAX + RBX)
+
+    mov rdx, OFFSET sumMsg
+    call WriteString
+    call WriteInt64                 ; 64비트 정수 출력
+    call Crlf
+
+    mov ecx, 0
+    call ExitProcess
+main ENDP
+END
+
+
+10. 64-Bit Subroutine: Array Sum (64비트 배열 합계 프로시저)
+​[문제 번역]
+64비트 정수 배열의 합을 계산하는 64비트 프로시저를 작성하라. 배열의 포인터는 RCX에, 요소 개수는 RDX에 전달받으며, 
+합은 RAX로 반환할 것. 이 프로시저를 테스트하는 호출 프로그램을 작성하라.
+INCLUDE Irvine64.inc
+
+.data
+array   QWORD 1000000000h, 2000000000h, 3000000000h, 4000000000h
+msgResult BYTE "The array sum is: ", 0
+
+.code
+main PROC
+    sub rsp, 40
+
+    mov rcx, OFFSET array           ; 1번째 인자: 배열 오프셋
+    mov rdx, LENGTHOF array         ; 2번째 인자: 요소 개수
+    call ArraySum64                 ; 프로시저 호출 (결과는 RAX)
+
+    mov rbx, rax
+    mov rdx, OFFSET msgResult
+    call WriteString
+    mov rax, rbx
+    call WriteInt64
+    call Crlf
+
+    mov ecx, 0
+    call ExitProcess
+main ENDP
+
+;-----------------------------------------------------
+; ArraySum64
+; 64비트 정수 배열의 합을 계산한다.
+; 받는 인자: RCX = 배열 주소, RDX = 배열 요소 개수
+; 반환 값: RAX = 요소들의 합
+;-----------------------------------------------------
+ArraySum64 PROC
+    mov rax, 0                      ; 합계 초기화
+
+L1:
+    add rax, [rcx]                  ; 요소 추가
+    add rcx, 8                      ; 다음 QWORD로 이동
+    dec rdx
+    jnz L1
+
+    ret
+ArraySum64 ENDP
+END
+
+
+11. 4-Bit Parameter Passing: AddFour 
+RCX, RDX, R8, R9로 네 개의 64비트 정수를 전달받아 그 합을 RAX로 반환하는 AddFour라는 이름의 64비트 프로시저를 작성하라.
+AddFour에 네 개의 값을 전달하고 그 합을 출력하는 메인 프로그램을 작성할 것. x64 호출 규약에 따라 스택에 32바이트의 섀도 공간(Shadow space)을 반드시 할당하고 해제해야 한다.
+INCLUDE Irvine64.inc
+
+.data
+resultMsg BYTE "Sum of four integers: ", 0
+
+.code
+main PROC
+    sub rsp, 40                     ; 32바이트 섀도 공간 할당 + 스택 정렬(8바이트 추가)
+
+    ; 4개의 64비트 인자를 규약에 따라 레지스터에 전달
+    mov rcx, 10
+    mov rdx, 20
+    mov r8,  30
+    mov r9,  40
+    call AddFour                    ; 반환값: RAX = 100
+
+    mov rbx, rax
+    mov rdx, OFFSET resultMsg
+    call WriteString
+    mov rax, rbx
+    call WriteInt64
+    call Crlf
+
+    add rsp, 40                     ; 섀도 공간 해제
+
+    mov ecx, 0
+    call ExitProcess
+main ENDP
+
+;-----------------------------------------------------
+; AddFour
+; 네 개의 64비트 정수를 더한다.
+; 받는 인자: RCX, RDX, R8, R9
+; 반환 값: RAX = 4개 정수의 합
+;-----------------------------------------------------
+AddFour PROC
+    mov rax, rcx
+    add rax, rdx
+    add rax, r8
+    add rax, r9
+    ret
+AddFour ENDP
+END
+
+
+
+
+
+
+
+
+
+
+
+
 
