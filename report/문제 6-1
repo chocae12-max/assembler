@@ -1,0 +1,208 @@
+1. 다음 명령어가 실행된 후 BX의 값은 무엇인가?
+mov bx,0FFFFh
+and bx,6Bh
+
+BX = 006Bh
+
+2. 다음 명령어가 실행된 후 BX의 값은 무엇인가?
+mov bx,91BAh
+and bx,92h
+
+BX = 0092h
+
+
+3.다음 명령어가 실행된 후 BX의 값은 무엇인가?
+mov bx,0240Bh
+or  bx,40B2h
+
+BX = 64BBh (또는 064BBh)
+
+
+4.다음 명령어가 실행된 후 BX의 값은 무엇인가?
+mov bx,029D6h
+xor bx,8181h
+
+BX = A857h
+
+5.다음 명령어가 실행된 후 EBX의 값은 무엇인가?
+mov edx,0
+mov ebx,0BFAFF69Fh
+or  ebx,edx
+
+EBX = BFAFF69Fh
+
+
+6. 다음 명령어가 실행된 후 RBX의 값은 무엇인가?
+mov rbx,0FFFFFFFFFFFFFFFFh
+mov ebx,50509B64h
+
+RBX = 0000000050509B64h
+
+
+7. 다음 명령어들이 차례대로 실행된 후 AL의 값은 각각 무엇인가?
+AL = 2Dh, 48h, 6Fh, A3h
+
+
+8.다음 명령어들이 차례대로 실행된 후 AL의 값은 각각 무엇인가?
+AL = 85h, 34h, BFh, AEh
+
+
+9.표시된 각 명령어가 실행된 후 캐리 플래그(CF), 제로 플래그(ZF), 부호 플래그(SF)의 값을 적으시오.
+a. CF = 0, ZF = 0, SF = 0
+b. CF = 0, ZF = 0, SF = 0
+c. CF = 1, ZF = 0, SF = 1
+
+
+10.ECX 레지스터의 값이 0일 때 지정된 레이블로 점프하는 조건 점프 명령어는 무엇인가?
+JECXZ (또는 JECX)
+
+
+11. JA와 JNBE 명령어는 어떠한 조건일 때 대상 레이블로 점프하는가?
+ZF = 0 이고 CF = 0 일 때
+
+
+12. 다음 명령어들이 실행된 후 EDX의 값은 무엇인가?
+EDX = 1
+
+
+13. 다음 명령어들이 실행된 후 EDX의 값은 무엇인가?
+EDX = 1
+
+
+14.다음 명령어들이 실행된 후 EDX의 값은 무엇인가?
+EDX = 0
+
+
+15.(참/거짓) 32비트 모드에서 LOOPZ(또는 LOOPE) 명령어는 ECX가 0보다 크고 
+Zero 플래그가 1(set)일 때 대상 레이블로 점프한다.
+참 (True)
+
+
+16.(참/거짓) 32비트 모드에서 LOOPNZ(또는 LOOPNE) 명령어는 ECX가 0보다 크고 
+Zero 플래그가 0(clear)일 때 대상 레이블로 점프한다.
+참 (True)
+
+
+17.다음 명령어들이 실행된 후 RAX의 값은 무엇인가?
+mov rax,0FFFFFFFFFFFFFFFFh
+and al,80h
+
+RAX = 0FFFFFFFFFFFFFF80h
+
+
+18.(참/거짓) .REPEAT 지시어는 루프 조건을 검사하기 전에 루프 본문의 문장들을 먼저 실행한다.
+참 (True)
+
+
+19.(참/거짓) .WHILE 지시어는 루프 본문의 문장들을 실행하기 전에 루프 조건을 검사하지 않는다.
+거짓 (False)
+
+
+
+6.10.2 Algorithm Workbench
+
+1. AX 레지스터의 하위 8비트는 변경하지 않고 상위 8비트를 지우는(0으로 만드는) 
+16비트 피연산자를 사용하는 단일 명령어를 작성하시오.
+and ax, 00FFh
+
+
+2. AX 레지스터의 다른 비트는 변경하지 않고 최상위 비트(bit 15)만 반전시키는 
+16비트 피연산자를 사용하는 단일 명령어를 작성하시오.
+xor ax, 8000h
+
+
+3. DL 레지스터의 비트 1, 2, 3이 모두 1로 설정(set)되어 있는 경우 레이블 L1으로 점프하는 코드를 작성하시오.
+
+and dl, 0Eh
+cmp dl, 0Eh
+je  L1
+
+
+4. BL 레지스터의 비트 4, 5, 6 중 하나라도 1로 설정(set)되어 있는 경우 레이블 L1으로 점프하는 코드를 작성하시오.
+test bl, 70h
+jnz  L1
+
+
+5. DL 레지스터의 비트 0, 1, 2가 모두 0(clear)인 경우 레이블 L1으로 점프하는 코드를 작성하시오.
+test dl, 07h
+jz   L1
+
+
+6. 다음 의사코드(pseudocode)를 어셈블리어로 구현하시오. (val1은 32비트 부호 있는 정수 변수)
+if (ebx > val1)
+    mov ebx, val1
+
+cmp ebx, val1
+jle Next
+mov ebx, val1
+Next:
+
+
+7. 다음 의사코드(pseudocode)를 어셈블리어로 구현하시오. (val1은 32비트 부호 있는 정수 변수)
+if (val1 <= ecx)
+    mov edx, 1
+else
+    mov edx, 2
+
+    cmp val1, ecx
+    jnle L1
+    mov edx, 1
+    jmp Next
+L1:
+    mov edx, 2
+Next:
+
+
+8. 단축 계산(short-circuit evaluation)을 사용하여 다음 복합 조건문을 어셈블리어로 구현하시오.
+if (ebx > ecx AND ebx > edx)
+    mov eax, 1
+else
+    mov eax, 2
+
+    cmp ebx, ecx
+    jle L1
+    cmp ebx, edx
+    jle L1
+    mov eax, 1
+    jmp Next
+L1:
+    mov eax, 2
+Next:
+
+
+9. 단축 계산(short-circuit evaluation)을 사용하여 다음 복합 조건문을 어셈블리어로 구현하시오.
+
+if (ebx > ecx OR ebx > edx)
+    mov eax, 1
+else
+    mov eax, 2
+
+
+    cmp ebx, ecx
+    jg  L1
+    cmp ebx, edx
+    jg  L1
+    mov eax, 2
+    jmp Next
+L1:
+    mov eax, 1
+Next:
+
+
+10. 다음 WHILE 루프를 어셈블리어로 구현하시오. (val1, val2는 부호 있는 32비트 정수 변수)
+while (val1 < val2)
+{
+    val1++;
+    val2--;
+
+
+top:
+    mov eax, val1
+    cmp eax, val2
+    jnl endwhile
+    inc val1
+    dec val2
+    jmp top
+endwhile:
+
+
