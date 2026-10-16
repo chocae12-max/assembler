@@ -1,3 +1,5 @@
+6.10.1 Short Answer
+
 1. 다음 명령어가 실행된 후 BX의 값은 무엇인가?
 mov bx,0FFFFh
 and bx,6Bh
