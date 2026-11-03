@@ -1,0 +1,276 @@
+7.9.1 Short Answer
+
+1. 다음 코드에서 각 시프트 또는 회전 명령어가 실행된 후 AL의 값을 적으시오.
+mov al,0D4h
+shr al,1       ; a.
+mov al,0D4h
+sar al,1       ; b.
+mov al,0D4h
+sar al,4       ; c.
+mov al,0D4h
+rol al,1       ; d.
+
+a. AL = 6Ah  /  b. AL = EAh  /  c. AL = FDh  /  d. AL = A9h
+
+
+2. 다음 코드에서 각 시프트 또는 회전 명령어가 실행된 후 AL의 값을 적으시오.
+mov al,0D4h
+ror al,3       ; a.
+mov al,0D4h
+rol al,7       ; b.
+stc
+mov al,0D4h
+rcl al,1       ; c.
+stc
+mov al,0D4h
+rcr al,3       ; d.
+
+a. AL = 9Ah  /  b. AL = 6Ah  /  c. AL = A9h  /  d. AL = 3Ah
+
+
+3. 다음 연산이 실행된 후 AX와 DX의 값은 무엇인가?
+mov dx,0
+mov ax,222h
+mov cx,100h
+mul cx
+
+AX = 2200h, DX = 0002h
+
+
+4. 다음 연산이 실행된 후 AX의 값은 무엇인가?
+mov ax,63h
+mov bl,10h
+div bl
+
+AX = 0306h
+
+
+5. 다음 연산이 실행된 후 EAX와 EDX의 값은 무엇인가?
+mov eax,123400h
+mov edx,0
+mov ebx,10h
+div ebx
+
+EAX = 00012340h, EDX = 00000000h
+
+
+6. 다음 연산이 실행된 후 AX와 DX의 값은 무엇인가?
+mov ax,4000h
+mov dx,500h
+mov bx,10h
+div bx
+
+몫 500400h가 AX에 들어갈 수 없어 나눗셈 예외(#DE)가 발생한다.
+
+
+7. 다음 명령어들이 실행된 후 BX의 값은 무엇인가?
+mov bx,5
+stc
+mov ax,60h
+adc bx,ax
+
+BX = 0066h
+
+
+8. 다음 코드가 64비트 모드에서 실행될 때의 결과를 설명하시오.
+.data
+dividend_hi QWORD 00000108h
+dividend_lo QWORD 33300020h
+divisor     QWORD 00000100h
+.code
+mov rdx,dividend_hi
+mov rax,dividend_lo
+div divisor
+
+몫 10800000000333000h가 RAX에 들어갈 수 없어 나눗셈 예외(#DE)가 발생한다.
+
+
+9. 다음 프로그램은 val1에서 val2를 빼기 위한 것이다. 모든 논리 오류를 찾아 수정하시오. 
+(CLC는 캐리 플래그를 0으로 만든다.)
+.data
+val1   QWORD 20403004362047A1h
+val2   QWORD 055210304A2630B2h
+result QWORD 0
+
+.code
+    mov cx,8                 ; 반복 횟수
+    mov esi,val1             ; 인덱스를 시작 위치로 설정
+    mov edi,val2
+    clc                      ; 캐리 플래그를 0으로 설정
+top:
+    mov al,BYTE PTR [esi]    ; 첫 번째 수의 바이트를 읽음
+    sbb al,BYTE PTR [edi]    ; 두 번째 수의 바이트를 뺌
+    mov BYTE PTR [esi],al    ; 결과를 저장
+    dec esi
+    dec edi
+    loop top
+
+.data
+val1   QWORD 20403004362047A1h
+val2   QWORD 055210304A2630B2h
+result QWORD 0
+
+.code
+    mov ecx,8
+    mov esi,OFFSET val1
+    mov edi,OFFSET val2
+    mov ebx,OFFSET result
+    clc
+top:
+    mov al,BYTE PTR [esi]
+    sbb al,BYTE PTR [edi]
+    mov BYTE PTR [ebx],al
+    inc esi
+    inc edi
+    inc ebx
+    loop top
+
+
+
+10. 다음 명령어들이 64비트 모드에서 실행된 후 RAX의 값을 16진수로 적으시오.
+.data
+multiplicand QWORD 0001020304050000h
+.code
+imul rax,multiplicand, 4
+
+RAX = 0004080C10140000h
+
+
+
+7.9.2 Algorithm Workbench
+
+1. AX를 EAX로 부호 확장하는 시프트 명령어들을 작성하시오. 즉, AX의 부호 비트를
+EAX의 상위 16비트에 복사하시오. CWD 명령어는 사용하지 마시오.
+shl eax,16
+sar eax,16
+
+2. 명령어 집합에 회전 명령어가 없다고 가정하시오. SHR과 조건 점프 명령어를 사용하여 
+AL의 내용을 오른쪽으로 1비트 회전시키는 방법을 보이시오.
+shr al,1
+jnc Done
+or  al,80h
+Done:
+
+
+3. EAX의 값에 16을 곱하는 논리 시프트 명령어를 작성하시오.
+shl eax,4
+
+
+4. EBX의 값을 4로 나누는 논리 시프트 명령어를 작성하시오.
+shr ebx,2
+
+
+5. DL 레지스터의 상위 4비트와 하위 4비트를 서로 바꾸는 단일 회전 명령어를 작성하시오.
+rol dl,4
+
+
+6. DX를 왼쪽으로 1비트 시프트하면서 AX의 최상위 비트를 DX의 최하위 비트 위치로 옮기는 단일 SHLD 명령어를 작성하시오.
+shld dx,ax,1
+
+
+7. 메모리에 있는 3개의 바이트를 오른쪽으로 1비트 시프트하는 명령어들을 작성하시오. 다음 테스트 데이터를 사용하시오.
+byteArray BYTE 81h,20h,33h
+
+shr byteArray[2],1
+rcr byteArray[1],1
+rcr byteArray[0],1
+
+
+8. 메모리에 있는 3개의 워드를 왼쪽으로 1비트 시프트하는 명령어들을 작성하시오. 다음 테스트 데이터를 사용하시오.
+wordArray WORD 810Dh,0C064h,93ABh
+
+shl wordArray[0],1
+rcl wordArray[2],1
+rcl wordArray[4],1
+
+
+9. -5에 3을 곱하고 그 결과를 16비트 변수 val1에 저장하는 명령어들을 작성하시오.
+mov  ax,-5
+imul ax,ax,3
+mov  val1,ax
+
+val1 = -15
+
+
+10. -276을 10으로 나누고 그 결과를 16비트 변수 val1에 저장하는 명령어들을 작성하시오.
+mov  ax,-276
+cwd
+mov  bx,10
+idiv bx
+mov  val1,ax
+
+val1 = -27
+
+
+11. 32비트 부호 없는 피연산자를 사용하여 다음 C++ 수식을 어셈블리어로 구현하시오.
+val1 = (val2 * val3) / (val4 - 3)
+
+mov eax,val2
+mul val3
+mov ecx,val4
+sub ecx,3
+div ecx
+mov val1,eax
+
+
+12. 32비트 부호 있는 피연산자를 사용하여 다음 C++ 수식을 어셈블리어로 구현하시오.
+val1 = (val2 / val3) * (val1 + val2)
+
+mov  eax,val2
+cdq
+idiv val3
+mov  ecx,val1
+add  ecx,val2
+imul eax,ecx
+mov  val1,eax
+
+
+13. 부호 없는 8비트 이진 값을 10진수로 표시하는 프로시저를 작성하시오. 이진 값은 AL로 전달한다. 입력 범위는 10진수 0부터 99까지이다.
+교재의 링크 라이브러리에서 호출할 수 있는 프로시저는 WriteChar뿐이다. 프로시저는 약 8개의 명령어로 구성하시오. 다음은 호출 예시이다.
+mov al,65             ; 입력 범위 0~99
+call showDecimal8
+
+showDecimal8 PROC
+    aam
+    add  ax,3030h
+    cmp  ah,'0'
+    je   WriteOnes
+    push eax
+    mov  al,ah
+    call WriteChar
+    pop  eax
+WriteOnes:
+    call WriteChar
+    ret
+showDecimal8 ENDP
+
+
+14. 도전 문제. 두 개의 알 수 없는 ASCII 10진 숫자를 더한 결과, AX에 0072h가 들어 있고 보조 캐리 플래그(AF)가 1이라고 가정하시오.
+Intel 64 및 IA-32 명령어 집합 참조 문서를 이용하여 AAA 명령어의 실행 결과를 구하시오. 답을 설명하시오.
+AX = 0108h, AF = 1, CF = 1
+
+AF가 1이므로 AX에 0106h를 더해 0178h가 된다. 이어서 AL의 상위 4비트를 0으로 만들어 최종 AX는 0108h가 된다. 
+
+
+15. 도전 문제. n과 y의 값이 주어졌을 때, SUB, MOV, AND 명령어만 사용하여 x = n mod y를 계산하는 방법을 보이시오.
+n은 임의의 32비트 부호 없는 정수이고, y는 2의 거듭제곱이라고 가정하시오.
+mov eax,n
+mov ecx,y
+sub ecx,1
+and eax,ecx
+mov x,eax
+
+
+16. 도전 문제. SAR, ADD, XOR 명령어만 사용하여 EAX에 들어 있는 부호 있는 정수의 절댓값을 계산하는 코드를 작성하시오.
+조건 점프는 사용하지 마시오.
+힌트. 수에 -1을 더한 뒤 1의 보수를 취하면 부호를 반대로 바꿀 수 있다. 모든 비트가 1인 값과 XOR하면 각 비트가 반전되고,
+모든 비트가 0인 값과 XOR하면 원래 값이 유지된다.
+
+xor edx,edx
+add edx,eax
+sar edx,31
+add eax,edx
+xor eax,edx
+
+입력이 -2147483648이면 EAX에 80000000h가 남는다. 절댓값 2147483648은 32비트 부호 있는 정수의 범위를 벗어난다.
+
