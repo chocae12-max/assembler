@@ -1,0 +1,530 @@
+7.10 Programming Exercises
+
+
+1. ASCII 10진수 표시
+소수점 위치가 암시된 ASCII 10진수를 출력하는 WriteScaled 프로시저를 작성하시오. 다음과 같이 수를 정의했다고 가정하시오. DECIMAL_OFFSET은 수의 오른쪽 끝에서 다섯 자리 앞에 소수점을 넣으라는 뜻이다.
+
+DECIMAL_OFFSET = 5
+.data
+decimal_one BYTE "100123456789765"
+
+WriteScaled의 출력은 다음과 같다.
+
+1001234567.89765
+
+WriteScaled를 호출할 때 숫자 문자열의 오프셋은 EDX, 문자열의 길이는 ECX, 소수점 위치는 EBX로 전달하시오. 길이가 서로 다른 수 3개를 WriteScaled에 전달하는 테스트 프로그램을 작성하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+DECIMAL_OFFSET = 5
+
+.data
+decimal_one   BYTE "100123456789765"
+decimal_two   BYTE "12345"
+decimal_three BYTE "42"
+
+.code
+WriteScaled PROC USES eax ebx ecx esi
+    mov esi,edx
+    test ecx,ecx
+    jz ScaledDone
+
+    cmp ebx,ecx
+    jb PrintDigits
+
+    mov al,'0'
+    call WriteChar
+    mov al,'.'
+    call WriteChar
+
+PadZeros:
+    cmp ebx,ecx
+    je PaddingDone
+    mov al,'0'
+    call WriteChar
+    dec ebx
+    jmp PadZeros
+
+PaddingDone:
+    mov ebx,0
+
+PrintDigits:
+    cmp ecx,ebx
+    jne PrintDigit
+    mov al,'.'
+    call WriteChar
+
+PrintDigit:
+    mov al,[esi]
+    call WriteChar
+    inc esi
+    loop PrintDigits
+
+ScaledDone:
+    ret
+WriteScaled ENDP
+
+main PROC
+    mov edx,OFFSET decimal_one
+    mov ecx,LENGTHOF decimal_one
+    mov ebx,DECIMAL_OFFSET
+    call WriteScaled
+    call Crlf
+
+    mov edx,OFFSET decimal_two
+    mov ecx,LENGTHOF decimal_two
+    mov ebx,2
+    call WriteScaled
+    call Crlf
+
+    mov edx,OFFSET decimal_three
+    mov ecx,LENGTHOF decimal_three
+    mov ebx,3
+    call WriteScaled
+    call Crlf
+    exit
+main ENDP
+END main
+
+
+
+2. 확장 뺄셈 프로시저
+크기가 임의인 두 이진 정수를 빼는 Extended_Sub 프로시저를 작성하시오. 두 정수의 저장 공간 크기는 같아야 하며, 그 크기는 32비트의 배수여야 한다. 각 정수가 최소 10바이트인 정수 쌍을 여러 개 전달하는 테스트 프로그램을 작성하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+.data
+firstValues  DWORD 0,0,1,  10,20,30,  0,1,2
+secondValues DWORD 1,0,0,   1, 2, 3,  1,0,1
+differences  DWORD 9 DUP(0)
+
+.code
+Extended_Sub PROC USES eax ecx esi edi edx
+    ; ESI = 첫 번째 수, EDI = 두 번째 수
+    ; EDX = 결과 주소, ECX = DWORD 개수
+    jecxz SubDone
+    clc
+
+SubtractNext:
+    mov eax,[esi]
+    sbb eax,[edi]
+    mov [edx],eax
+    lea esi,[esi+4]
+    lea edi,[edi+4]
+    lea edx,[edx+4]
+    loop SubtractNext
+
+SubDone:
+    ret
+Extended_Sub ENDP
+
+main PROC
+    mov esi,OFFSET firstValues
+    mov edi,OFFSET secondValues
+    mov edx,OFFSET differences
+    mov ebp,3
+
+TestNext:
+    mov ecx,3
+    call Extended_Sub
+    add esi,12
+    add edi,12
+    add edx,12
+    dec ebp
+    jnz TestNext
+
+    mov esi,OFFSET differences
+    mov ecx,LENGTHOF differences
+    mov ebx,TYPE differences
+    call DumpMem
+    exit
+main ENDP
+END main
+
+
+
+3. 패킹된 10진수 변환
+4바이트 패킹된 10진 정수를 ASCII 10진 숫자 문자열로 변환하는 PackedToAsc 프로시저를 작성하시오. 패킹된 정수와 ASCII 숫자를 저장할 버퍼의 주소를 전달하시오. 패킹된 10진 정수를 최소 5개 전달하는 짧은 테스트 프로그램을 작성하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+.data
+packedValues DWORD 12345678h, 87654321h, 00001234h
+             DWORD 90000000h, 00000000h
+asciiBuffer  BYTE 9 DUP(0)
+
+.code
+PackedToAsc PROC USES eax ecx edi
+    ; EAX = 패킹된 10진수, EDI = 출력 버퍼 주소
+    mov ecx,8
+
+ConvertDigit:
+    rol eax,4
+    mov dl,al
+    and dl,0Fh
+    add dl,'0'
+    mov [edi],dl
+    inc edi
+    loop ConvertDigit
+
+    mov BYTE PTR [edi],0
+    ret
+PackedToAsc ENDP
+
+main PROC
+    mov esi,OFFSET packedValues
+    mov ecx,LENGTHOF packedValues
+
+TestNext:
+    mov eax,[esi]
+    mov edi,OFFSET asciiBuffer
+    call PackedToAsc
+    mov edx,OFFSET asciiBuffer
+    call WriteString
+    call Crlf
+    add esi,TYPE packedValues
+    loop TestNext
+
+    exit
+main ENDP
+END main
+
+
+
+4. 회전 연산을 이용한 암호화
+평문의 각 바이트를 서로 다른 방향으로 지정된 비트 수만큼 회전시켜 간단히 암호화하는 프로시저를 작성하시오. 예를 들어, 다음 암호화 키 배열에서 음수는 왼쪽 회전, 양수는 오른쪽 회전을 뜻한다. 각 위치의 정수는 회전할 비트 수를 나타낸다.
+
+key BYTE -2, 4, 1, 0, -3, 5, 2, -4, -4, 6
+
+프로시저는 평문의 처음 10바이트에 키를 대응시키고, 각 평문 바이트를 해당 키 값에 따라 회전시켜야 한다. 그다음 10바이트에 같은 키를 대응시켜 이 과정을 반복하시오. 서로 다른 데이터로 암호화 프로시저를 두 번 호출하는 테스트 프로그램을 작성하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+.data
+key      BYTE -2,4,1,0,-3,5,2,-4,-4,6
+message1 BYTE "Assembly language"
+message2 BYTE "Rotate each byte"
+
+.code
+Encrypt PROC USES eax ebx ecx esi edi
+    ; ESI = 평문 주소, EBX = 평문 길이
+    xor edi,edi
+
+EncryptNext:
+    test ebx,ebx
+    jz EncryptDone
+
+    mov al,[esi]
+    mov cl,key[edi]
+    test cl,cl
+    jns RotateRight
+
+    neg cl
+    rol al,cl
+    jmp StoreByte
+
+RotateRight:
+    ror al,cl
+
+StoreByte:
+    mov [esi],al
+    inc esi
+    inc edi
+    cmp edi,LENGTHOF key
+    jb ContinueEncrypt
+    xor edi,edi
+
+ContinueEncrypt:
+    dec ebx
+    jmp EncryptNext
+
+EncryptDone:
+    ret
+Encrypt ENDP
+
+main PROC
+    mov esi,OFFSET message1
+    mov ebx,LENGTHOF message1
+    call Encrypt
+    mov ecx,LENGTHOF message1
+    mov ebx,TYPE message1
+    call DumpMem
+
+    mov esi,OFFSET message2
+    mov ebx,LENGTHOF message2
+    call Encrypt
+    mov ecx,LENGTHOF message2
+    mov ebx,TYPE message2
+    call DumpMem
+
+    exit
+main ENDP
+END main
+
+
+
+5. 소수
+에라토스테네스의 체를 사용하여 2부터 1000까지의 모든 소수를 구하는 프로그램을 작성하시오. 소수를 찾는 이 방법은 인터넷의 여러 글에서 찾아볼 수 있다. 구한 소수를 모두 출력하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+LIMIT = 1000
+
+.data
+composite BYTE (LIMIT + 1) DUP(0)
+
+.code
+main PROC
+    mov esi,2
+
+CheckFactor:
+    mov eax,esi
+    imul eax,esi
+    cmp eax,LIMIT
+    ja StartPrint
+
+    cmp composite[esi],0
+    jne NextFactor
+
+MarkMultiple:
+    mov composite[eax],1
+    add eax,esi
+    cmp eax,LIMIT
+    jbe MarkMultiple
+
+NextFactor:
+    inc esi
+    jmp CheckFactor
+
+StartPrint:
+    mov esi,2
+
+CheckPrime:
+    cmp composite[esi],0
+    jne NextNumber
+
+    mov eax,esi
+    call WriteDec
+    call Crlf
+
+NextNumber:
+    inc esi
+    cmp esi,LIMIT
+    jbe CheckPrime
+
+    exit
+main ENDP
+END main
+
+
+
+6. 최대공약수(GCD)
+두 정수의 최대공약수(GCD)는 두 수를 모두 나누어떨어지게 하는 가장 큰 정수이다. 최대공약수 알고리즘은 반복문에서 정수 나눗셈을 사용하며, 다음 의사코드로 나타낼 수 있다.
+
+int GCD(int x, int y)
+{
+    x = abs(x);                 // 절댓값
+    y = abs(y);
+    do {
+        int n = x % y;
+        x = y;
+        y = n;
+    } while (y > 0);
+    return x;
+}
+
+이 함수를 어셈블리어로 구현하고, 서로 다른 값을 전달하여 함수를 여러 번 호출하는 테스트 프로그램을 작성하시오. 모든 결과를 화면에 출력하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+.code
+GCD PROC USES ebx edx
+    ; EAX = x, EBX = y, 반환값 = EAX
+    test eax,eax
+    jns CheckY
+    neg eax
+
+CheckY:
+    test ebx,ebx
+    jns GcdLoop
+    neg ebx
+
+GcdLoop:
+    test ebx,ebx
+    jz GcdDone
+
+    xor edx,edx
+    div ebx
+    mov eax,ebx
+    mov ebx,edx
+    jmp GcdLoop
+
+GcdDone:
+    ret
+GCD ENDP
+
+main PROC
+    mov eax,48
+    mov ebx,18
+    call GCD
+    call WriteDec
+    call Crlf
+
+    mov eax,-81
+    mov ebx,27
+    call GCD
+    call WriteDec
+    call Crlf
+
+    mov eax,100
+    mov ebx,0
+    call GCD
+    call WriteDec
+    call Crlf
+
+    exit
+main ENDP
+END main
+
+
+
+7. 비트 연산을 이용한 곱셈
+시프트와 덧셈만으로 임의의 32비트 부호 없는 정수와 EAX의 값을 곱하는 BitwiseMultiply 프로시저를 작성하시오. 정수는 EBX로 전달하고 곱은 EAX로 반환하시오. 프로시저를 호출하여 곱을 출력하는 짧은 테스트 프로그램을 작성하시오. 곱은 항상 32비트 이내라고 가정한다.
+
+이 프로그램은 난도가 높은 편이다. 가능한 방법 중 하나는 반복문에서 승수를 오른쪽으로 시프트하면서 캐리 플래그가 1이 될 때까지 몇 번 시프트했는지 기록하는 것이다. 구한 횟수를 SHL의 시프트 횟수로 사용하고, 피승수를 대상 피연산자로 지정할 수 있다. 승수의 마지막 1비트를 찾을 때까지 이 과정을 반복하시오.
+
+정답
+
+INCLUDE Irvine32.inc
+
+.code
+BitwiseMultiply PROC USES ebx edx
+    mov edx,0
+
+MultiplyNext:
+    test ebx,ebx
+    jz MultiplyDone
+
+    shr ebx,1
+    jnc ShiftMultiplicand
+    add edx,eax
+
+ShiftMultiplicand:
+    shl eax,1
+    jmp MultiplyNext
+
+MultiplyDone:
+    mov eax,edx
+    ret
+BitwiseMultiply ENDP
+
+main PROC
+    mov eax,37
+    mov ebx,25
+    call BitwiseMultiply
+    call WriteDec
+    call Crlf
+
+    exit
+main ENDP
+END main
+
+
+
+8. 패킹된 정수 더하기
+7.6.1절의 AddPacked 프로시저를 확장하여 크기가 임의인 두 패킹된 10진 정수를 더할 수 있게 하시오. 두 정수의 길이는 같아야 한다. 4바이트, 8바이트, 16바이트 정수 쌍을 AddPacked에 전달하는 테스트 프로그램을 작성하시오. 프로시저에 정보를 전달할 때는 다음 레지스터를 사용하는 것을 권장한다.
+
+- ESI — 첫 번째 수의 주소
+- EDI — 두 번째 수의 주소
+- EDX — 합을 저장할 주소
+- ECX — 더할 바이트 수
+
+정답
+
+INCLUDE Irvine32.inc
+
+.data
+first4  BYTE 4 DUP(99h)
+second4 BYTE 01h,3 DUP(0)
+sum4    BYTE 5 DUP(0)
+
+first8  BYTE 8 DUP(99h)
+second8 BYTE 01h,7 DUP(0)
+sum8    BYTE 9 DUP(0)
+
+first16  BYTE 16 DUP(99h)
+second16 BYTE 01h,15 DUP(0)
+sum16    BYTE 17 DUP(0)
+
+.code
+AddPacked PROC USES eax ecx esi edi edx
+    ; 결과 버퍼는 입력보다 1바이트 크게 잡는다.
+    clc
+    jecxz StoreCarry
+
+AddNext:
+    mov al,[esi]
+    adc al,[edi]
+    daa
+    mov [edx],al
+    inc esi
+    inc edi
+    inc edx
+    loop AddNext
+
+StoreCarry:
+    mov al,0
+    adc al,0
+    mov [edx],al
+    ret
+AddPacked ENDP
+
+main PROC
+    mov esi,OFFSET first4
+    mov edi,OFFSET second4
+    mov edx,OFFSET sum4
+    mov ecx,LENGTHOF first4
+    call AddPacked
+    mov esi,OFFSET sum4
+    mov ecx,LENGTHOF sum4
+    mov ebx,TYPE sum4
+    call DumpMem
+
+    mov esi,OFFSET first8
+    mov edi,OFFSET second8
+    mov edx,OFFSET sum8
+    mov ecx,LENGTHOF first8
+    call AddPacked
+    mov esi,OFFSET sum8
+    mov ecx,LENGTHOF sum8
+    mov ebx,TYPE sum8
+    call DumpMem
+
+    mov esi,OFFSET first16
+    mov edi,OFFSET second16
+    mov edx,OFFSET sum16
+    mov ecx,LENGTHOF first16
+    call AddPacked
+    mov esi,OFFSET sum16
+    mov ecx,LENGTHOF sum16
+    mov ebx,TYPE sum16
+    call DumpMem
+
+    exit
+main ENDP
+END main
+
+각 정답은 32비트 MASM과 Irvine32 기준으로 작성했다. 이 환경에서는 직접 빌드하거나 실행하지 못했다.
+
