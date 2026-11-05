@@ -1,0 +1,23 @@
+INCLUDE Irvine32.inc
+
+WriteConsoleW PROTO STDCALL :DWORD, :PTR WORD, :DWORD, :PTR DWORD, :DWORD
+
+.data
+    outputText WORD 0C774h, 0B984h, ':', ' ', 0C870h, 0C7ACh, 0C644h, 13, 10
+               WORD 0D559h, 0BC88h, ':', ' '
+    textLength EQU ($ - outputText) / 2
+    charsWritten DWORD ?
+
+.code
+main PROC
+    INVOKE GetStdHandle, STD_OUTPUT_HANDLE
+    INVOKE WriteConsoleW, eax, ADDR outputText, textLength, ADDR charsWritten, 0
+
+    mov eax, 2023564044
+    call WriteDec
+    call Crlf
+
+    exit
+main ENDP
+
+END main
