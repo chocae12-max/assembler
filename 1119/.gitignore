@@ -1,0 +1,9 @@
+.vs/
+bin/
+obj/
+*.obj
+*.pdb
+*.ilk
+*.log
+*.tlog/
+*.vcxproj.user
